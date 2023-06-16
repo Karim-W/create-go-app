@@ -1,8 +1,9 @@
 package adapters
 
 import (
+	"{{.moduleName}}/pkg/adapters/applicationinsightstrace"
+
 	trace "github.com/BetaLixT/appInsightsTrace"
-	"{{.moduleName}}/adapters/applicationinsightstrace"
 )
 
 // SetupAdapters initializes the adapters package.

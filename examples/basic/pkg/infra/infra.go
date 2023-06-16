@@ -1,8 +1,9 @@
 package infra
 
 import (
-	"{{.moduleName}}/infra/logger"
-	"{{.moduleName}}/infra/tracing"
+	"{{.moduleName}}/pkg/infra/logger"
+	"{{.moduleName}}/pkg/infra/tracing"
+
 	"go.uber.org/zap"
 )
 

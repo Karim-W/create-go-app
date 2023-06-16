@@ -2,11 +2,11 @@ package middlewares
 
 import (
 	"context"
+	"{{.moduleName}}/pkg/infra/tracing"
+	"{{.moduleName}}/pkg/services/factory"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"{{.moduleName}}/infra/tracing"
-	"{{.moduleName}}/services/factory"
 )
 
 func TraceRequest(

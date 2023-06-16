@@ -1,10 +1,10 @@
 package rest
 
 import (
+	"{{.moduleName}}/cmd/rest/middlewares"
+	"{{.moduleName}}/pkg/infra/tracing"
+
 	"github.com/gin-gonic/gin"
-	"{{.moduleName}}/domains/contracts"
-	"{{.moduleName}}/infra/tracing"
-	"{{.moduleName}}/rest/middlewares"
 	"go.uber.org/zap"
 )
 
@@ -14,7 +14,7 @@ func SetupRoutes(
 	port string,
 	logger *zap.Logger,
 	trx tracing.Tracer,
-	handlers ...contracts.RestHandler[gin.RouterGroup],
+	handlers ...RestHandler[gin.RouterGroup],
 ) *gin.Engine {
 	router := gin.New()
 	// ================ Health Check

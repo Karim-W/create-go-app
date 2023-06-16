@@ -3,11 +3,11 @@ package factory
 import (
 	"context"
 	"fmt"
+	"{{.moduleName}}/internal/constants"
+	"{{.moduleName}}/pkg/infra/logger"
+	"{{.moduleName}}/pkg/infra/tracing"
 	"strings"
 
-	"{{.moduleName}}/domains/constants"
-	"{{.moduleName}}/infra/logger"
-	"{{.moduleName}}/infra/tracing"
 	"github.com/karim-w/stdlib"
 	"github.com/soreing/trex"
 	"go.uber.org/zap"

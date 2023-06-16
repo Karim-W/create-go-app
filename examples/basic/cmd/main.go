@@ -1,15 +1,15 @@
 package main
 
 import (
+	"{{.moduleName}}/cmd/rest"
+	"{{.moduleName}}/internal/config"
+	"{{.moduleName}}/pkg/adapters"
+	"{{.moduleName}}/pkg/infra"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/joho/godotenv"
-	"{{.moduleName}}/adapters"
-	"{{.moduleName}}/config"
-	"{{.moduleName}}/infra"
-	"{{.moduleName}}/rest"
 )
 
 func main() {

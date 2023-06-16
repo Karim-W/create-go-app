@@ -3,6 +3,7 @@ package middlewares
 import (
 	"errors"
 	"fmt"
+	"{{.moduleName}}/pkg/infra/logger"
 	"net"
 	"net/http/httputil"
 	"os"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/betalixt/gorr"
 	"github.com/gin-gonic/gin"
-	"{{.moduleName}}/infra/logger"
 	"go.uber.org/zap"
 )
 

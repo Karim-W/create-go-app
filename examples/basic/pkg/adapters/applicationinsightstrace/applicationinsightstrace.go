@@ -2,9 +2,9 @@ package applicationinsightstrace
 
 import (
 	"context"
+	"{{.moduleName}}/internal/constants"
 
 	trace "github.com/BetaLixT/appInsightsTrace"
-	"{{.moduleName}}/domains/constants"
 	"github.com/soreing/trex"
 	"go.uber.org/zap"
 )
