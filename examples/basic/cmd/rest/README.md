@@ -12,6 +12,6 @@ Web Framework application. You can change this to whatever you want.
 
 ## Imports
 
-- `{project}/internal/config`
+- `{project}/internals/config`
   - this is where you put your config package and usually where the port is
   defined for the server

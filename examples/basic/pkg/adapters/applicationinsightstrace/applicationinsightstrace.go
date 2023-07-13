@@ -2,7 +2,7 @@ package applicationinsightstrace
 
 import (
 	"context"
-	"{{.moduleName}}/internal/constants"
+	"{{.moduleName}}/internals/constants"
 
 	trace "github.com/BetaLixT/appInsightsTrace"
 	"github.com/soreing/trex"
