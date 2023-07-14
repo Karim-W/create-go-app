@@ -3,7 +3,7 @@ package factory
 import (
 	"context"
 	"fmt"
-	"{{.moduleName}}/internals/constants"
+	"{{.moduleName}}/internal/constants"
 	"{{.moduleName}}/pkg/infra/logger"
 	"{{.moduleName}}/pkg/infra/tracing"
 	"strings"

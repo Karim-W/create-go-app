@@ -2,7 +2,7 @@ package main
 
 import (
 	"{{.moduleName}}/cmd/rest"
-	"{{.moduleName}}/internals/config"
+	"{{.moduleName}}/internal/config"
 	"{{.moduleName}}/pkg/adapters"
 	"{{.moduleName}}/pkg/infra"
 	"os"

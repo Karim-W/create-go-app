@@ -15,4 +15,4 @@ applications or libraries.
 - constants
   - Constants that are specific to the application
 
-for more info on this package refer to this [guide](https://github.com/golang-standards/project-layout/blob/master/internals/README.md)
+for more info on this package refer to this [guide](https://github.com/golang-standards/project-layout/blob/master/internal/README.md)

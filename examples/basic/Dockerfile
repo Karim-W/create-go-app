@@ -1,16 +1,24 @@
-FROM golang:1.20-alpine
+# Step 1: Build Go Application
+FROM golang:1.20-alpine AS go-builder
 
-RUN apk update && apk add git
+WORKDIR /app
 
-WORKDIR /
+COPY go.mod go.sum ./
+RUN go mod download
+
 COPY . .
-
-RUN go build -o /app ./cmd/main.go
+RUN go build -o app ./cmd
 
 FROM alpine:latest
-WORKDIR /
-COPY --from=0 /app /app
 
+WORKDIR /app
+
+# Copy Go application binary
+COPY --from=go-builder /app/app .
+
+
+# Expose port
 EXPOSE 8080
-CMD ["/app"]
 
+# Set the entry point
+CMD ["./app"]
