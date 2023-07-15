@@ -2,9 +2,10 @@ package middlewares
 
 import (
 	"context"
+	"time"
+
 	"{{.moduleName}}/pkg/infra/tracing"
 	"{{.moduleName}}/pkg/services/factory"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,7 +24,7 @@ func TraceRequest(
 		var err error
 		if traceparent == "" {
 			ftx = factory.NewFactory(context.Background())
-			c.Request.Header.Set("traceparent", ftx.GetTraceParent())
+			c.Request.Header.Set("traceparent", ftx.TraceParent())
 		} else {
 			ftx, err = factory.NewFactoryFromTraceParent(traceparent)
 			if err != nil {
@@ -36,7 +37,7 @@ func TraceRequest(
 		status := c.Writer.Status()
 		bytes := c.Writer.Size()
 		trx.TraceRequest(
-			ftx.GetContext(),
+			ftx.Context(),
 			method,
 			path,
 			query,

@@ -3,10 +3,11 @@ package factory
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"{{.moduleName}}/internal/constants"
 	"{{.moduleName}}/pkg/infra/logger"
 	"{{.moduleName}}/pkg/infra/tracing"
-	"strings"
 
 	"github.com/karim-w/stdlib"
 	"github.com/soreing/trex"
@@ -14,9 +15,9 @@ import (
 )
 
 type Service interface {
-	GetLogger() *zap.Logger
-	GetContext() context.Context
-	GetTraceParent() string
+	Logger() *zap.Logger
+	Context() context.Context
+	TraceParent() string
 }
 
 type sf struct {
@@ -35,8 +36,6 @@ func NewFactory(ctx context.Context) Service {
 	raw := ctx.Value(constants.TRACE_INFO_KEY)
 	if raw == nil {
 		tid, err := stdlib.GenerateNewTraceparent(true)
-		logger.GetLogger().
-			Info("Creating New Context", zap.String("traceparent", tid))
 		ver, tid, pid, flg, _ := trex.DecodeTraceparent(tid)
 		// Generate a new resource id
 		rid, err := trex.GenerateRadomHexString(8)
@@ -101,22 +100,19 @@ func NewFactoryFromTraceParent(traceparent string) (Service, error) {
 	}, nil
 }
 
-// GetLogger() Returns the logger with the traceinfo
-func (s *sf) GetLogger() *zap.Logger {
-	s.logger.Info("Getting Logger")
+// Logger() Returns the logger with the traceinfo
+func (s *sf) Logger() *zap.Logger {
 	return s.logger
 }
 
-// GetContext() Returns the context of the request
-func (s *sf) GetContext() context.Context {
-	s.logger.Info("Getting Context")
+// Context() Returns the context of the request
+func (s *sf) Context() context.Context {
 	return s.ctx
 }
 
-// GetTraceParent()
+// TraceParent()
 // returns the traceparent
-func (s *sf) GetTraceParent() string {
-	s.logger.Info("Getting TraceParent")
+func (s *sf) TraceParent() string {
 	var id string
 	sid, err := stdlib.GenerateParentId()
 	ver, tid, _, rid, flg := tracing.GetTracer().ExtractTraceInfo(s.ctx)
