@@ -1,13 +1,15 @@
 package main
 
 import (
+	"log"
+	"os"
+	"os/signal"
+	"syscall"
+
 	"{{.moduleName}}/cmd/rest"
 	"{{.moduleName}}/internal/config"
 	"{{.moduleName}}/pkg/adapters"
 	"{{.moduleName}}/pkg/infra"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/joho/godotenv"
 )
@@ -20,33 +22,41 @@ func main() {
 	config.InitOrDie()
 	// set up adapters
 	iKey, err := config.GetAppInsightsInstrumentationKey()
-	if err != nil {
-		panic(err)
-	}
+	assert(err)
 	// ========= SetupAdapters =========
-	acore, err := adapters.SetupAdapters(iKey, "my-service")
-	if err != nil {
-		panic(err)
-	}
+	adpt, err := adapters.SetupAdapters(&adapters.Options{
+		InstrumentationKey: iKey,
+		ServiceName:        "my-service",
+	})
+	assert(err)
 	// ========= SetupInfra =========
-	logger, trx, err := infra.SetupInfra(acore)
-	if err != nil {
-		panic(err)
-	}
+	infras, err := infra.SetupInfra(&infra.Options{
+		Trx: adpt.Trx,
+	})
+	assert(err)
 	// ========= Setup Repositories =========
 	// ========= Setup Services =========
 	// ========= Setup Usecases =========
 	// ========= Start the app ========
 	port, err := config.GetServerPort()
-	if err != nil {
-		panic(err)
-	}
-	go rest.SetupRoutes(port, logger, trx)
+	assert(err)
+	go rest.SetupRoutes(&rest.Options{
+		Port:   port,
+		Logger: infras.Logger,
+		Trx:    infras.Trx,
+	})
 	// *** Sigterm handler ***
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	logger.Info("Shutting down")
-	acore.Close()
-	logger.Sync()
+	infras.Logger.Info("Shutting down")
+	adpt.Trx.Close()
+	infras.Logger.Sync()
+}
+
+func assert(err error) {
+	if err != nil {
+		log.Fatal(err)
+		panic(err) // just in case, i have trust issues
+	}
 }

@@ -8,12 +8,16 @@ import (
 	"go.uber.org/zap"
 )
 
+type Options struct {
+	Port   string
+	Logger *zap.Logger
+	Trx    tracing.Tracer
+}
+
 // SetupRoutes initializes the rest package.
 // It is called by the main package.
 func SetupRoutes(
-	port string,
-	logger *zap.Logger,
-	trx tracing.Tracer,
+	opts *Options,
 	handlers ...RestHandler[gin.RouterGroup],
 ) *gin.Engine {
 	router := gin.New()
@@ -27,10 +31,10 @@ func SetupRoutes(
 	router.Use(
 		gin.LoggerWithConfig(gin.LoggerConfig{SkipPaths: []string{"/", ""}}),
 		middlewares.CorsMiddleware(),
-		middlewares.TraceRequest(trx),
+		middlewares.TraceRequest(opts.Trx),
 		middlewares.ErrorHandlerMiddleware(),
 		middlewares.RecoveryMiddleware(),
-		middlewares.RootRecoveryMiddleware(logger),
+		middlewares.RootRecoveryMiddleware(opts.Logger),
 	)
 	// ================ Routes
 	router.NoRoute(func(c *gin.Context) {
@@ -41,7 +45,7 @@ func SetupRoutes(
 		handler.SetupRoutes(api)
 	}
 	// ================ Run Server
-	err := router.Run(port)
+	err := router.Run(opts.Port)
 	if err != nil {
 		panic(err)
 	}

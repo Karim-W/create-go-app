@@ -10,6 +10,7 @@ pub enum Packages {
     Service,
     Usecase,
     Handler,
+    Adapter,
 }
 
 impl Packages {
@@ -19,6 +20,7 @@ impl Packages {
             Packages::Service => "service",
             Packages::Usecase => "usecase",
             Packages::Handler => "handler",
+            Packages::Adapter => "adapter",
         }
     }
 
@@ -28,6 +30,7 @@ impl Packages {
             "service" => Some(Packages::Service),
             "usecase" => Some(Packages::Usecase),
             "handler" => Some(Packages::Handler),
+            "adapter" => Some(Packages::Adapter),
             _ => None,
         }
     }
@@ -48,6 +51,9 @@ pub fn handle_add(typ: &str, name: &str) {
             }
             Packages::Handler => {
                 add_handler(name);
+            }
+            Packages::Adapter => {
+                add_adapter(name);
             }
         },
         None => {
@@ -212,4 +218,75 @@ fn find_folder(name: &str) -> Option<String> {
         continue;
     }
     return None;
+}
+
+pub fn add_adapter(name: &str) {
+    // check if adapter is supported
+    match name {
+        "posty" | "rdb" | "rabbit" => {
+            println!("Adding adapter: {}", name);
+        }
+        _ => {
+            println!("{} is not a supported adapter", name);
+            return;
+        }
+    }
+    // check if folder exists
+    let mut path_string = find_folder("adapters");
+    if let None = path_string {
+        let path = find_folder("pkg");
+        if let None = path {
+            println!("cannot find parent package");
+            return;
+        }
+        // create the adapter folder
+        let path = path.unwrap();
+        let path = Path::new(&path);
+        let path = path.join("adapters");
+        fs::create_dir_all(path.clone()).unwrap();
+        path_string = Some(path.to_str().unwrap().to_string());
+    }
+    let path = path_string.unwrap();
+    let adapter_path = Path::new(&path);
+    // checkout the file
+    let cmd = "https://github.com/Karim-W/create-go-app.git".to_string();
+    let output = std::process::Command::new("git")
+        .args(&["clone", cmd.as_str(), ".cga-temp"])
+        .output()
+        .expect("failed to execute process");
+    if !output.status.success() {
+        println!(
+            "failed to execute process: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        std::process::exit(1);
+    }
+    let output = std::process::Command::new("mv")
+        .args(&[
+            format!("./.cga-temp/examples/adapters/{}", name),
+            adapter_path
+                .to_str()
+                .expect("failed to realize path")
+                .to_string(),
+        ])
+        .output()
+        .expect("failed to execute process");
+    if !output.status.success() {
+        println!(
+            "failed to execute process: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        std::process::exit(1);
+    }
+    let output = std::process::Command::new("rm")
+        .args(&["-rf", ".cga-temp"])
+        .output()
+        .expect("failed to execute process");
+    if !output.status.success() {
+        println!(
+            "failed to execute process: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        std::process::exit(1);
+    }
 }

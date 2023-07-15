@@ -7,15 +7,27 @@ import (
 	"go.uber.org/zap"
 )
 
+type Options struct {
+	Trx tracing.Tracer
+}
+
+type Results struct {
+	Logger *zap.Logger
+	Trx    tracing.Tracer
+}
+
 // SetupInfra initializes the infra package.
 // It is called by the main package.
 func SetupInfra(
-	tracer tracing.Tracer,
-) (*zap.Logger, tracing.Tracer, error) {
+	opts *Options,
+) (*Results, error) {
 	// init the logger
 	l := logger.InitOrDie()
 	// init the tracer
-	trx := tracing.InitOrDie(tracer)
+	trx := tracing.InitOrDie(opts.Trx)
 	// TODO: Add your other infra packages here
-	return l, trx, nil
+	return &Results{
+		Logger: l,
+		Trx:    trx,
+	}, nil
 }
