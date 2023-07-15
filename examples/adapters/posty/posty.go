@@ -14,11 +14,13 @@ func MustInit(
 	dsn string,
 	conns int,
 ) sqldb.DB {
-	dbCtx := sqldb.DBProvider(
+	dbCtx := sqldb.NewWithOptions(
 		driver,
 		dsn,
+		&sqldb.Options{
+			MaxIdleConns: conns,
+			MaxOpenConns: conns,
+		},
 	)
-	dbCtx.SetMaxOpenConns(conns)
-	dbCtx.SetMaxIdleConns(conns)
 	return dbCtx
 }
