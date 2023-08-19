@@ -223,7 +223,7 @@ fn find_folder(name: &str) -> Option<String> {
 pub fn add_adapter(name: &str) {
     // check if adapter is supported
     match name {
-        "posty" | "rdb" | "rabbit" => {
+        "posty" | "rdb" | "rabbit" |"id"=> {
             println!("Adding adapter: {}", name);
         }
         _ => {
