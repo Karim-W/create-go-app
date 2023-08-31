@@ -2,17 +2,30 @@ package factory
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"{{.moduleName}}/internal/constants"
-	"{{.moduleName}}/pkg/infra/logger"
 	"{{.moduleName}}/pkg/infra/tracing"
 
-	"github.com/karim-w/stdlib"
 	"github.com/soreing/trex"
 	"go.uber.org/zap"
 )
+
+type depenencies struct {
+	logger *zap.Logger
+	trx    tracing.Tracer
+}
+
+var deps *depenencies
+
+// not thread safe
+func SetUpDependencies(logger *zap.Logger, trx tracing.Tracer) {
+	if deps != nil {
+		return
+	}
+	deps = &depenencies{
+		logger, trx,
+	}
+}
 
 type Service interface {
 	Logger() *zap.Logger
@@ -27,62 +40,25 @@ type sf struct {
 }
 
 func NewFactory(ctx context.Context) Service {
-	// Clean up the context from the request context and making transient deps
-	if ctx == nil {
-		ctx = context.TODO()
-	}
-	traceparent := ""
-	// check if tid is already in the context
-	raw := ctx.Value(constants.TRACE_INFO_KEY)
-	if raw == nil {
-		tid, err := stdlib.GenerateNewTraceparent(true)
-		ver, tid, pid, flg, _ := trex.DecodeTraceparent(tid)
-		// Generate a new resource id
-		rid, err := trex.GenerateRadomHexString(8)
-
-		if err == nil {
-			// Generate a transaction context usin the factory
-			txm := trex.TxModel{
-				Ver: ver,
-				Tid: tid,
-				Pid: pid,
-				Rid: rid,
-				Flg: flg,
-			}
-			traceparentBuilder := strings.Builder{}
-			traceparentBuilder.WriteString(ver)
-			traceparentBuilder.WriteString("-")
-			traceparentBuilder.WriteString(tid)
-			traceparentBuilder.WriteString("-")
-			traceparentBuilder.WriteString(pid)
-			traceparentBuilder.WriteString("-")
-			traceparentBuilder.WriteString(rid)
-			traceparentBuilder.WriteString("-")
-			traceparentBuilder.WriteString(flg)
-			traceparent = traceparentBuilder.String()
-			ctx = context.WithValue(ctx, constants.TRACE_INFO_KEY, txm)
-		}
-	}
-
-	return &sf{
-		logger:      logger.GetTracedLogger(traceparent),
-		ctx:         ctx,
-		traceparent: traceparent,
-	}
+	ver, tid, pid, rid, flg := deps.trx.ExtractTraceInfo(ctx)
+	ftx, _ := newFactoryFromTraceParentWithRid(
+		ver+"-"+tid+"-"+pid+"-"+flg,
+		rid,
+	)
+	return ftx
 }
 
-func NewFactoryFromTraceParent(traceparent string) (Service, error) {
-	if traceparent == "" {
-		return NewFactory(nil), nil
-	}
+func newFactoryFromTraceParentWithRid(traceparent string, rid string) (Service, error) {
 	ver, tid, pid, flg, err := trex.DecodeTraceparent(traceparent)
+	// If the header could not be decoded, generate a new header
 	if err != nil {
-		return nil, err
+		ver, flg = "00", "01"
+		tid, _ = trex.GenerateRadomHexString(16)
+		pid, _ = trex.GenerateRadomHexString(8)
 	}
 	// Generate a new resource id
-	rid, err := trex.GenerateRadomHexString(8)
-	if err != nil {
-		return nil, err
+	if rid == "" {
+		rid, _ = trex.GenerateRadomHexString(8)
 	}
 	// Generate a transaction context usin the factory
 	txm := trex.TxModel{
@@ -92,11 +68,39 @@ func NewFactoryFromTraceParent(traceparent string) (Service, error) {
 		Rid: rid,
 		Flg: flg,
 	}
+	TraceParent := ver + "-" + tid + "-" + pid + "-" + flg
 	ctx := context.WithValue(context.Background(), constants.TRACE_INFO_KEY, txm)
 	return &sf{
-		logger:      logger.GetTracedLogger(traceparent),
+		logger:      deps.logger.With(zap.String("traceparent", traceparent)),
 		ctx:         ctx,
-		traceparent: traceparent,
+		traceparent: TraceParent,
+	}, nil
+}
+
+func NewFactoryFromTraceParent(traceparent string) (Service, error) {
+	ver, tid, pid, flg, err := trex.DecodeTraceparent(traceparent)
+	// If the header could not be decoded, generate a new header
+	if err != nil {
+		ver, flg = "00", "01"
+		tid, _ = trex.GenerateRadomHexString(16)
+		pid, _ = trex.GenerateRadomHexString(8)
+	}
+	// Generate a new resource id
+	rid, _ := trex.GenerateRadomHexString(8)
+	// Generate a transaction context usin the factory
+	txm := trex.TxModel{
+		Ver: ver,
+		Tid: tid,
+		Pid: pid,
+		Rid: rid,
+		Flg: flg,
+	}
+	TraceParent := ver + "-" + tid + "-" + pid + "-" + flg
+	ctx := context.WithValue(context.Background(), constants.TRACE_INFO_KEY, txm)
+	return &sf{
+		logger:      deps.logger.With(zap.String("traceparent", traceparent)),
+		ctx:         ctx,
+		traceparent: TraceParent,
 	}, nil
 }
 
@@ -113,13 +117,5 @@ func (s *sf) Context() context.Context {
 // TraceParent()
 // returns the traceparent
 func (s *sf) TraceParent() string {
-	var id string
-	sid, err := stdlib.GenerateParentId()
-	ver, tid, _, rid, flg := tracing.GetTracer().ExtractTraceInfo(s.ctx)
-	if err != nil {
-		id = rid
-	} else {
-		id = sid
-	}
-	return fmt.Sprintf("%s-%s-%s-%s", ver, tid, id, flg)
+	return s.traceparent
 }

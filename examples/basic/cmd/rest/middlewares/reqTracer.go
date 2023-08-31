@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"context"
 	"time"
 
 	"{{.moduleName}}/pkg/infra/tracing"
@@ -20,17 +19,10 @@ func TraceRequest(
 		agent := c.Request.UserAgent()
 		ip := c.ClientIP()
 		traceparent := c.Request.Header.Get("traceparent")
-		var ftx factory.Service
-		var err error
-		if traceparent == "" {
-			ftx = factory.NewFactory(context.Background())
-			c.Request.Header.Set("traceparent", ftx.TraceParent())
-		} else {
-			ftx, err = factory.NewFactoryFromTraceParent(traceparent)
-			if err != nil {
-				ftx = factory.NewFactory(context.Background())
-			}
-		}
+		ftx, _ := factory.NewFactoryFromTraceParent(traceparent)
+		c.Set("ftx", ftx)
+		c.Request.Header.Set("traceparent", ftx.TraceParent())
+		c.Header("traceparent", ftx.TraceParent())
 		start := time.Now()
 		c.Next()
 		end := time.Now()
