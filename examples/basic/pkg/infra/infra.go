@@ -21,13 +21,11 @@ type Results struct {
 func SetupInfra(
 	opts *Options,
 ) (*Results, error) {
+	res := &Results{}
 	// init the logger
-	l := logger.InitOrDie()
+	res.Logger = logger.InitOrDie()
 	// init the tracer
-	trx := tracing.InitOrDie(opts.Trx)
+	res.Trx = tracing.InitOrDie(opts.Trx)
 	// TODO: Add your other infra packages here
-	return &Results{
-		Logger: l,
-		Trx:    trx,
-	}, nil
+	return res, nil
 }

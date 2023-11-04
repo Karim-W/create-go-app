@@ -23,8 +23,7 @@ type Results struct {
 func SetupAdapters(
 	opts *Options,
 ) (*Results, error) {
-	trx := applicationinsightstrace.InitOrDie(opts.InstrumentationKey, opts.ServiceName)
-	return &Results{
-		Trx: trx,
-	}, nil
+	res := &Results{}
+	res.Trx = applicationinsightstrace.InitOrDie(opts.InstrumentationKey, opts.ServiceName)
+	return res, nil
 }

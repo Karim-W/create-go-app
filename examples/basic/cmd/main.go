@@ -8,6 +8,7 @@ import (
 
 	"{{.moduleName}}/cmd/rest"
 	"{{.moduleName}}/internal/config"
+	"{{.moduleName}}/internal/constants"
 	"{{.moduleName}}/pkg/adapters"
 	"{{.moduleName}}/pkg/infra"
 
@@ -26,7 +27,7 @@ func main() {
 	// ========= SetupAdapters =========
 	adpt, err := adapters.SetupAdapters(&adapters.Options{
 		InstrumentationKey: iKey,
-		ServiceName:        "my-service",
+		ServiceName:        constants.SEVICE_NAME,
 	})
 	assert(err)
 	// ========= SetupInfra =========
