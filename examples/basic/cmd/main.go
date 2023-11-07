@@ -27,7 +27,7 @@ func main() {
 	// ========= SetupAdapters =========
 	adpt, err := adapters.SetupAdapters(&adapters.Options{
 		InstrumentationKey: iKey,
-		ServiceName:        constants.SEVICE_NAME,
+		ServiceName:        constants.SERVICE_NAME,
 	})
 	assert(err)
 	// ========= SetupInfra =========
