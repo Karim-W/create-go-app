@@ -13,6 +13,7 @@ import (
 	"{{.moduleName}}/pkg/infra"
 
 	"github.com/joho/godotenv"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -43,16 +44,16 @@ func main() {
 	assert(err)
 	go rest.SetupRoutes(&rest.Options{
 		Port:   port,
-		Logger: infras.Logger,
+		Logger: zap.L(),
 		Trx:    infras.Trx,
 	})
 	// *** Sigterm handler ***
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	infras.Logger.Info("Shutting down")
+	zap.L().Info("Shutting down")
 	adpt.Trx.Close()
-	infras.Logger.Sync()
+	zap.L().Sync()
 }
 
 func assert(err error) {
