@@ -3,7 +3,6 @@ package middlewares
 import (
 	"errors"
 	"fmt"
-	"{{.moduleName}}/pkg/infra/logger"
 	"net"
 	"net/http/httputil"
 	"os"
@@ -17,7 +16,8 @@ import (
 func ErrorHandlerMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ctx.Next()
-		l := logger.GetTracedLogger(ctx.Request.Header.Get("traceparent"))
+		l := zap.L().With(zap.String("traceparent", ctx.Request.Header.Get("traceparent")))
+
 		if len(ctx.Errors) > 0 {
 			errs := make([]error, len(ctx.Errors))
 			berr := (*gorr.Error)(nil)
@@ -51,7 +51,7 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 
 func RecoveryMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		l := logger.GetTracedLogger(ctx.Request.Header.Get("traceparent"))
+		l := zap.L().With(zap.String("traceparent", ctx.Request.Header.Get("traceparent")))
 		defer func() {
 			if err := recover(); err != nil {
 				perr, ok := err.(gorr.Error)

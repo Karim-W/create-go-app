@@ -1,10 +1,7 @@
 package infra
 
 import (
-	"{{.moduleName}}/pkg/infra/logger"
 	"{{.moduleName}}/pkg/infra/tracing"
-
-	"go.uber.org/zap"
 )
 
 type Options struct {
@@ -12,8 +9,7 @@ type Options struct {
 }
 
 type Results struct {
-	Logger *zap.Logger
-	Trx    tracing.Tracer
+	Trx tracing.Tracer
 }
 
 // SetupInfra initializes the infra package.
@@ -23,7 +19,7 @@ func SetupInfra(
 ) (*Results, error) {
 	res := &Results{}
 	// init the logger
-	res.Logger = logger.InitOrDie()
+	logger.InitOrDie()
 	// init the tracer
 	res.Trx = tracing.InitOrDie(opts.Trx)
 	// TODO: Add your other infra packages here

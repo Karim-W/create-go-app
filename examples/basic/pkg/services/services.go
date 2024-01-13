@@ -1,7 +1,6 @@
 package services
 
 import (
-	"go.uber.org/zap"
 	"{{.moduleName}}/pkg/infra/tracing"
 	"{{.moduleName}}/pkg/services/factory"
 )
@@ -12,13 +11,12 @@ import (
 // and adding the return type to the return statement.
 
 type Options struct {
-	Logger *zap.Logger
-	Trx    tracing.Tracer
+	Trx tracing.Tracer
 }
 
 func SetupServices(
 	opts *Options,
 ) error {
-	factory.SetUpDependencies(opts.Logger, opts.Trx)
+	factory.SetUpDependencies(opts.Trx)
 	return nil
 }

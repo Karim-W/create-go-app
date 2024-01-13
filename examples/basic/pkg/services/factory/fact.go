@@ -11,20 +11,18 @@ import (
 )
 
 type depenencies struct {
-	logger *zap.Logger
-	trx    tracing.Tracer
+	trx tracing.Tracer
 }
 
 var deps *depenencies
 
 // not thread safe
-func SetUpDependencies(logger *zap.Logger, trx tracing.Tracer) {
+func SetUpDependencies(trx tracing.Tracer) {
 	if deps != nil {
 		return
 	}
-	deps = &depenencies{
-		logger, trx,
-	}
+
+	deps = &depenencies{trx}
 }
 
 type Service interface {
@@ -71,7 +69,7 @@ func newFactoryFromTraceParentWithRid(traceparent string, rid string) (Service, 
 	TraceParent := ver + "-" + tid + "-" + pid + "-" + flg
 	ctx := context.WithValue(context.Background(), constants.TRACE_INFO_KEY, txm)
 	return &sf{
-		logger:      deps.logger.With(zap.String("traceparent", TraceParent)),
+		logger:      zap.L().With(zap.String("traceparent", TraceParent)),
 		ctx:         ctx,
 		traceparent: TraceParent,
 	}, nil
@@ -98,7 +96,7 @@ func NewFactoryFromTraceParent(traceparent string) (Service, error) {
 	TraceParent := ver + "-" + tid + "-" + pid + "-" + flg
 	ctx := context.WithValue(context.Background(), constants.TRACE_INFO_KEY, txm)
 	return &sf{
-		logger:      deps.logger.With(zap.String("traceparent", TraceParent)),
+		logger:      zap.L().With(zap.String("traceparent", TraceParent)),
 		ctx:         ctx,
 		traceparent: TraceParent,
 	}, nil
