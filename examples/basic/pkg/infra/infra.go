@@ -1,6 +1,7 @@
 package infra
 
 import (
+	"{{.moduleName}}/pkg/infra/logger"
 	"{{.moduleName}}/pkg/infra/tracing"
 )
 
