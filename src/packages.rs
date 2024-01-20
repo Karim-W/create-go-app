@@ -81,7 +81,7 @@ pub fn add_repository(name: &str) {
     let path = path_string.unwrap();
     let uc_path = Path::new(&path);
     //create file with extension .go
-    let path = uc_path.join(name.clone().to_string() + ".go");
+    let path = uc_path.join(name.to_string() + ".go");
     let file = fs::File::create(path).unwrap();
     let mut writer = std::io::BufWriter::new(file);
     let repo_name = name.to_string();
@@ -127,7 +127,7 @@ pub fn add_service(name: &str) {
     }
     let path = path_string.unwrap();
     let path = Path::new(&path);
-    let path = path.join(name.clone().to_string() + ".go");
+    let path = path.join(name.to_string() + ".go");
     fs::File::create(path).unwrap();
 }
 
@@ -150,7 +150,7 @@ pub fn add_usecase(name: &str) {
     let path = path_string.unwrap();
     let uc_path = Path::new(&path);
     //create file with extension .go
-    let path = uc_path.join(name.clone().to_string() + ".go");
+    let path = uc_path.join(name.to_string() + ".go");
     let file = fs::File::create(path).unwrap();
     let mut writer = std::io::BufWriter::new(file);
     let usecase_name = name.to_string();
@@ -198,11 +198,11 @@ pub fn add_handler(name: &str) {
     let path = path_string.unwrap();
     let path = Path::new(&path);
     //create file with extension .go
-    let path = path.join(name.clone().to_string() + ".go");
+    let path = path.join(name.to_string() + ".go");
     fs::File::create(path).unwrap();
 }
 
-fn find_folder(name: &str) -> Option<String> {
+pub fn find_folder(name: &str) -> Option<String> {
     let path = Path::new(".");
     for entry in WalkDir::new(path).follow_links(true) {
         if entry.is_err() {
