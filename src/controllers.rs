@@ -35,7 +35,7 @@ pub fn generate_controller(
 ) -> String {
     let mut buffer  = CONTROLLER_CONSTRUCTOR.replace(".{{CONTROLLERNAME}}", controller_name).replace(".{{MODULE}}", module);
     let mut route_count = 0;
-    let mut route_mapping:HashMap<String,(String,String)> = HashMap::new();
+    let mut route_mapping:HashMap<(String,String),String> = HashMap::new();
 
     for route in routes {
         route_count += 1;
@@ -44,19 +44,28 @@ pub fn generate_controller(
 
         let sanitized_path = route.path.clone().unwrap_or("/".to_string()).replace("{", ":").replace("}", "");
 
-        route_mapping.insert(sanitized_path, (route.method.clone().unwrap_or("GET".to_string()), function_name.clone()));
+        route_mapping.insert( (route.method.clone().unwrap_or("GET".to_string()),sanitized_path), function_name.clone());
 
         buffer.push_str(
-            format!("// Handler - {}\nfunc (c *_{}) {}(ctx *gin.Context) {{}}\n",
+            format!("// Handler - {}\nfunc (c *_{}) {}(ctx *gin.Context) {{\n",
                     route.clone().description.unwrap_or("".to_string()),
                     controller_name, function_name
         ).as_str());
+        // initialize the factory from injected context
+        buffer.push_str("\tftx := ctx.MustGet(\"ftx\").(factory.Service)\n\n"); 
+        // log the request
+        buffer.push_str(format!("\tftx.Logger().Info(\"{}.{}\")\n", controller_name, function_name).as_str());
+        buffer.push_str("\t// TODO: implement your handler here\n\n");
+        buffer.push_str("\tctx.JSON(501, gin.H{\"message\": \"not implemented\"})\n");
+        buffer.push_str("}\n\n");
     }
 
     buffer.push_str(format!("func (c *_{}) SetupRoutes(rg gin.IRouter) {{\n", controller_name).as_str());
-    for (route, (method,function)) in route_mapping {
+
+    for ((method,route), function) in route_mapping {
         buffer.push_str(format!("\trg.{}(\"{}\", c.{})\n",method,route, function).as_str());
     }
+
     buffer.push_str("}\n");
 
     return buffer;
