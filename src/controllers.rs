@@ -40,34 +40,34 @@ pub fn generate_controller(
     for route in routes {
         route_count += 1;
 
-        let function_name = route.clone().summary.unwrap_or(format!("handler_{}",route_count)).replace(" ", "_").to_lowercase();
+        let function_name = route.clone().summary.unwrap_or(format!("handler_{route_count}")).replace(' ', "_").to_lowercase();
 
-        let sanitized_path = route.path.clone().unwrap_or("/".to_string()).replace("{", ":").replace("}", "");
+        let sanitized_path = route.path.clone().unwrap_or_else(||"/".to_string()).replace('{', ":").replace('}', "");
 
-        route_mapping.insert( (route.method.clone().unwrap_or("GET".to_string()),sanitized_path), function_name.clone());
+        route_mapping.insert( (route.method.clone().unwrap_or_else(||"GET".to_string()),sanitized_path), function_name.clone());
 
         buffer.push_str(
             format!("// Handler - {}\nfunc (c *_{}) {}(ctx *gin.Context) {{\n",
-                    route.clone().description.unwrap_or("".to_string()),
+                    route.clone().description.unwrap_or_else(String::new),
                     controller_name, function_name
         ).as_str());
         // initialize the factory from injected context
         buffer.push_str("\tftx := ctx.MustGet(\"ftx\").(factory.Service)\n\n"); 
         // log the request
-        buffer.push_str(format!("\tftx.Logger().Info(\"{}.{}\")\n", controller_name, function_name).as_str());
+        buffer.push_str(format!("\tftx.Logger().Info(\"{controller_name}.{function_name}\")\n").as_str());
         buffer.push_str("\t// TODO: implement your handler here\n\n");
         buffer.push_str("\tctx.JSON(501, gin.H{\"message\": \"not implemented\"})\n");
         buffer.push_str("}\n\n");
     }
 
-    buffer.push_str(format!("func (c *_{}) SetupRoutes(rg gin.IRouter) {{\n", controller_name).as_str());
+    buffer.push_str(format!("func (c *_{controller_name}) SetupRoutes(rg gin.IRouter) {{\n").as_str());
 
     for ((method,route), function) in route_mapping {
-        buffer.push_str(format!("\trg.{}(\"{}\", c.{})\n",method,route, function).as_str());
+        buffer.push_str(format!("\trg.{method}(\"{route}\", c.{function})\n").as_str());
     }
 
     buffer.push_str("}\n");
 
-    return buffer;
+    buffer
 }
 

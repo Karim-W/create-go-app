@@ -5,10 +5,12 @@ pub trait Capitalize {
 impl Capitalize for String {
     fn capitalize_first_letter(&self) -> String {
         let mut chars = self.chars();
-        match chars.next() {
-            None => String::new(),
-            Some(f) => f.to_uppercase().collect::<String>() + chars.as_str(),
+
+        if chars.next().is_none() {
+            return Self::new();
         }
+
+        chars.next().map_or_else(Self::new, |f| f.to_uppercase().collect::<Self>() + chars.as_str())
     }
 }
 

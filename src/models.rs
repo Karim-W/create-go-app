@@ -304,10 +304,17 @@ pub struct RequestTree {
 }
 
 impl RequestTree {
+    #[must_use]
     pub fn new() -> Self {
-        RequestTree {
+        Self {
             handlers: HashMap::new(),
         }
+    }
+}
+
+impl Default for RequestTree {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -326,7 +333,7 @@ pub struct RequestHandler {
 
 impl From<&Operation> for RequestHandler {
     fn from(operation: &Operation) -> Self {
-        RequestHandler {
+        Self {
             method: None,
             path: None,
             parameters: operation.parameters.clone(),
