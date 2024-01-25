@@ -272,6 +272,7 @@ pub fn add_handler(name: &str) {
     fs::File::create(path).expect("failed to create file");
 }
 
+#[allow(clippy::needless_return)]
 #[must_use]
 /// # Panics
 pub fn find_folder(name: &str) -> Option<String> {

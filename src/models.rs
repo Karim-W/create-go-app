@@ -60,8 +60,9 @@ pub struct Operation {
     pub operation_id: Option<String>,
     pub tags: Option<Vec<String>>,
     pub parameters: Option<Vec<Parameter>>,
+    #[serde(rename = "requestBody")]
     pub request_body: Option<RequestBody>,
-    pub responses: Option<Responses>,
+    pub responses: Option<HashMap<String, Response>>,
     pub security: Option<Vec<SecurityRequirement>>,
     pub servers: Option<Vec<Server>>,
     pub deprecated: Option<bool>,
@@ -72,6 +73,7 @@ pub struct Operation {
 #[derive(Clone,Debug, Serialize, Deserialize)]
 pub struct Parameter {
     pub name: String,
+    #[serde(rename = "in")]
     pub in_field: Option<String>,
     pub description: Option<String>,
     pub required: Option<bool>,
@@ -257,6 +259,8 @@ pub struct Callback {
 
 #[derive(Clone,Debug, Serialize, Deserialize)]
 pub struct Schema {
+    #[serde(rename = "$ref")]
+    pub r#ref: Option<String>,
     pub title: Option<String>,
     pub multiple_of: Option<f64>,
     pub maximum: Option<f64>,
@@ -325,7 +329,7 @@ pub struct RequestHandler {
     pub path: Option<String>,
     pub parameters: Option<Vec<Parameter>>,
     pub request_body: Option<RequestBody>,
-    pub responses: Option<Responses>,
+    pub responses: Option<HashMap<String, Response>>,
     pub summary: Option<String>,
     pub description: Option<String>,
     pub tags: Option<Vec<String>>,
@@ -342,6 +346,93 @@ impl From<&Operation> for RequestHandler {
             summary: operation.summary.clone(),
             description: operation.description.clone(),
             tags: operation.tags.clone(),
+        }
+    }
+}
+
+#[derive(Clone,Debug,PartialEq ,Eq,Serialize, Deserialize)]
+pub enum ClientParameterUsage {
+    PathParameter,
+    QueryParameter,
+    HeaderParameter,
+    CookieParameter,
+}
+
+impl ClientParameterUsage {
+    pub fn from_string(s: &str) -> Self {
+        match s {
+            "path" => Self::PathParameter,
+            "query" => Self::QueryParameter,
+            "header" => Self::HeaderParameter,
+            "cookie" => Self::CookieParameter,
+            _ => panic!("unknown parameter usage: {}", s),
+        }
+    }
+}
+#[derive(Clone,Debug, Serialize, Deserialize)]
+pub enum ClientParameterUsageType {
+    String,
+    Number,
+    Integer,
+    Boolean,
+    Array,
+    Object,
+}
+
+impl ClientParameterUsageType {
+    pub fn to_go(&self) -> String {
+        match &self {
+            Self::String => "string".to_string(),
+            Self::Number => "float64".to_string(),
+            Self::Integer => "int".to_string(),
+            Self::Boolean => "bool".to_string(),
+            Self::Array => "[]".to_string(),
+            Self::Object => "struct".to_string(),
+        }
+    }
+}
+
+#[derive(Clone,Debug, Serialize, Deserialize)]
+pub struct ClientParameter {
+    pub name: String,
+    pub r#type: ClientParameterUsageType,
+    pub usage: ClientParameterUsage,
+    pub schema: Option<Schema>,
+}
+
+impl ClientParameter {
+    pub fn from_parameter(parameter: &Parameter) -> Self {
+        Self {
+            name: parameter.name.clone(),
+            r#type: ClientParameterUsageType::String,
+            usage: ClientParameterUsage::from_string(&parameter.in_field.clone().unwrap()),
+            schema: parameter.schema.clone(),
+        }
+    }
+}
+
+
+#[derive(Clone,Debug, Serialize, Deserialize)]
+pub struct ClientContract {
+    pub name: String,
+    pub args: Vec<ClientParameter>, 
+    pub body: Option<String>,
+    pub return_type: String,
+    pub description: Option<String>,
+    pub path: String,
+    pub method: String,
+}
+
+impl Default for ClientContract {
+    fn default() -> Self {
+        Self {
+            body: None,
+            name: String::new(),
+            args: Vec::new(),
+            return_type: String::new(),
+            description: None,
+            path: String::new(),
+            method: String::new(),
         }
     }
 }

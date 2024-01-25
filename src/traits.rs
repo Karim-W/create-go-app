@@ -3,14 +3,15 @@ pub trait Capitalize {
 }
 
 impl Capitalize for String {
+    #[allow(clippy::option_if_let_else,clippy::needless_return)]
     fn capitalize_first_letter(&self) -> String {
         let mut chars = self.chars();
 
-        if chars.next().is_none() {
-            return Self::new();
+        match chars.next() {
+            None => Self::new(),
+            Some(f) => f.to_uppercase().collect::<Self>() + chars.as_str(),
         }
 
-        chars.next().map_or_else(Self::new, |f| f.to_uppercase().collect::<Self>() + chars.as_str())
     }
 }
 
