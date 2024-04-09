@@ -35,7 +35,7 @@ fn add_mono_repo_sub_command(cmd: Command) -> Command {
         Command::new("mono")
             .about("create a new monorepo")
             .arg(arg!(<typ> "The type of package to create"))
-            .arg_required_else_help(false),
+            .arg_required_else_help(true),
     )
 }
 
@@ -103,6 +103,9 @@ pub fn startup() {
             let alt: String = "app".to_string();
             let typ = sub_matches.get_one::<String>("typ").unwrap_or(&alt);
             match typ.as_str() {
+                "app" => {
+                    crate::mono::setup_monorepo_application();
+                }
                 _ => {
                     crate::mono::setup_monorepo();
                 }

@@ -6,6 +6,8 @@ use std::{
 
 use walkdir::WalkDir;
 
+use crate::utils;
+
 #[allow(clippy::too_many_lines)]
 /// # Panics
 pub fn setup_monorepo() {
@@ -117,8 +119,7 @@ pub fn setup_monorepo() {
         let file_path = entry.path();
 
         if file_path.is_file() {
-            replace_handlebars_in_file(file_path, service_name.as_str(), module_name.as_str())
-                .expect("Failed to replace handlebars in file");
+            replace_handlebars_in_file(file_path, service_name.as_str(), module_name.as_str());
         }
     }
 
@@ -192,4 +193,140 @@ fn replace_handlebars_in_file(
     file.write_all(modified_contents.as_bytes())?;
 
     Ok(())
+}
+
+pub fn setup_monorepo_application() {
+    println!("Please Enter The application Name: ");
+
+    let mut service_name = String::new();
+
+    std::io::stdin()
+        .read_line(&mut service_name)
+        .expect("failed to read line");
+
+    let service_name = service_name.trim().to_lowercase();
+
+    let (module_name, _) = utils::get_service_definition();
+
+    println!("Adding application: {service_name}");
+
+    // check if directory is empty
+    let cmd = "https://github.com/Karim-W/create-go-app.git".to_string();
+
+    let output = std::process::Command::new("git")
+        .args(["clone", cmd.as_str()])
+        .output()
+        .expect("failed to execute process");
+
+    if !output.status.success() {
+        println!(
+            "failed to execute process: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        std::process::exit(1);
+    }
+
+    println!("{}", String::from_utf8_lossy(&output.stderr));
+
+    let output = std::process::Command::new("mv")
+        .args([
+            format!("./create-go-app/examples/monoapp").as_str(),
+            format!("./apps/{service_name}").as_str(),
+        ])
+        .output()
+        .expect("failed to execute process");
+
+    if !output.status.success() {
+        println!(
+            "failed to execute process: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        std::process::exit(1);
+    }
+
+    let output = std::process::Command::new("rm")
+        .args(["-rf", "create-go-app"])
+        .output()
+        .expect("failed to execute process");
+
+    if !output.status.success() {
+        println!(
+            "failed to execute process: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        std::process::exit(1);
+    }
+
+    println!("{}", String::from_utf8_lossy(&output.stderr));
+
+    let dir_path = format!("./apps/{service_name}");
+    // walk through the directory and replace the template files with the service name
+    // and module name
+    for entry in WalkDir::new(dir_path).follow_links(true) {
+        if entry.is_err() {
+            continue;
+        }
+
+        let entry = entry.expect("Failed to get entry");
+
+        let file_path = entry.path();
+
+        if file_path.is_file() {
+            let _ =
+                replace_handlebars_in_file(file_path, service_name.as_str(), module_name.as_str());
+        }
+    }
+
+    println!("Application Added Successfully");
+    println!("Adding application to workspace");
+    let output = std::process::Command::new("go")
+        .args(["work", "use", format!("./apps/{service_name}").as_str()])
+        .output()
+        .expect("failed to execute process");
+
+    if !output.status.success() {
+        println!(
+            "failed to execute process: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        std::process::exit(1);
+    }
+
+    println!("syncing go workspace");
+
+    let output = std::process::Command::new("go")
+        .args(["work", "sync"])
+        .output()
+        .expect("failed to execute process");
+
+    if !output.status.success() {
+        println!(
+            "failed to execute process: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        std::process::exit(1);
+    }
+
+    println!("go workspace completed");
+
+    println!("running go mod tidy");
+
+    // move into the directory and run go mod tidy
+    std::env::set_current_dir(format!("./apps/{service_name}"))
+        .expect("Failed to change directory");
+
+    let output = std::process::Command::new("go")
+        .args(["work", "sync"])
+        .output()
+        .expect("failed to execute process");
+
+    if !output.status.success() {
+        println!(
+            "failed to execute process: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        std::process::exit(1);
+    }
+
+    println!("done <3");
 }
