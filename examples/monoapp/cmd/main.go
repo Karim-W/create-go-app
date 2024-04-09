@@ -4,10 +4,11 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"{{.moduleName}}/apps/weather/internal/config"
-	"{{.moduleName}}/apps/weather/internal/wires"
-	"{{.moduleName}}/transports/rest"
 	"syscall"
+
+	"{{.moduleName}}/apps/{{.serviceName}}/internal/config"
+	"{{.moduleName}}/apps/{{.serviceName}}/internal/wires"
+	"{{.moduleName}}/transports/rest"
 
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"

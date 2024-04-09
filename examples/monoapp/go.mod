@@ -1,4 +1,4 @@
-module {{.moduleName}}/apps/weather
+module {{.moduleName}}/apps/{{.serviceName}}
 
 go 1.21.0
 
