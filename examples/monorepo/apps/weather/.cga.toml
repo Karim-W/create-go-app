@@ -1,0 +1,3 @@
+[application]
+module = "{{.moduleName}}/apps"
+service = "weather"

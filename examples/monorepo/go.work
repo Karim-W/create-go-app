@@ -1,0 +1,10 @@
+go 1.21.0
+
+use (
+	./apps/weather
+	./pkg/adapters
+	./pkg/domains
+	./pkg/infrastructure
+	./services/factory
+	./transports/rest
+)

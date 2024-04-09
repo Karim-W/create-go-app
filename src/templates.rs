@@ -13,11 +13,11 @@ type {{usecase_name_cap}} interface {
 
 pub const USECASE_IMPL_TEMPLATE: &str = r"package {{usecase_name}}usecase
 
-type _{{usecase_name}} struct {
+type {{usecase_name}}_ struct {
 }
 
 func New() usecases.{{usecase_name_cap}} {
-    return &_{{usecase_name}}{}
+    return &{{usecase_name}}_{}
 }
 ";
 
@@ -30,14 +30,13 @@ type {{repository_name_cap}} interface {
 
 pub const REPOSITORY_IMPL_TEMPLATE: &str = r"package {{repository_name}}repository
 
-type _{{repository_name}} struct {
+type {{repository_name}}_ struct {
 }
 
 func New() repositories.{{repository_name_cap}} {
-    return &_{{repository_name}}{}
+    return &{{repository_name}}_{}
 }
 ";
-
 
 pub enum Structures {
     Basic,
@@ -61,4 +60,3 @@ impl Structures {
         }
     }
 }
-

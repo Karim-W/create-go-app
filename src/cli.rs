@@ -1,6 +1,6 @@
 use clap::{arg, Command};
 
-use crate::{packages, gen::generate_package, templates};
+use crate::{gen::generate_package, packages, templates};
 
 fn base_command() -> Command {
     Command::new("create-go-app")
@@ -30,6 +30,15 @@ fn add_template_sub_command(cmd: Command) -> Command {
     )
 }
 
+fn add_mono_repo_sub_command(cmd: Command) -> Command {
+    cmd.subcommand(
+        Command::new("mono")
+            .about("create a new monorepo")
+            .arg(arg!(<typ> "The type of package to create"))
+            .arg_required_else_help(false),
+    )
+}
+
 #[allow(clippy::cognitive_complexity)]
 fn add_gen_sub_command(cmd: Command) -> Command {
     cmd.subcommand(
@@ -43,12 +52,13 @@ fn add_gen_sub_command(cmd: Command) -> Command {
 }
 
 fn build_command() -> Command {
-   let mut cmd = base_command();
-   cmd = add_new_sub_command(cmd);
-   cmd = add_gen_sub_command(cmd);
-   cmd = add_template_sub_command(cmd);
+    let mut cmd = base_command();
+    cmd = add_new_sub_command(cmd);
+    cmd = add_gen_sub_command(cmd);
+    cmd = add_template_sub_command(cmd);
+    cmd = add_mono_repo_sub_command(cmd);
 
-   cmd
+    cmd
 }
 
 /// # Panics
@@ -59,22 +69,45 @@ pub fn startup() {
 
     match matches.subcommand() {
         Some(("new", sub_matches)) => {
-            let typ = sub_matches.get_one::<String>("typ").expect("No type provided");
-            let name = sub_matches.get_one::<String>("name").expect("No name provided");
+            let typ = sub_matches
+                .get_one::<String>("typ")
+                .expect("No type provided");
+            let name = sub_matches
+                .get_one::<String>("name")
+                .expect("No name provided");
             packages::handle_add(typ.as_str(), name.as_str());
-        },
+        }
         Some(("gen", sub_matches)) => {
-            let typ = sub_matches.get_one::<String>("typ").expect("No type provided");
-            let path = sub_matches.get_one::<String>("path").expect("No path provided");
-            let name = sub_matches.get_one::<String>("name").expect("No name provided");
+            let typ = sub_matches
+                .get_one::<String>("typ")
+                .expect("No type provided");
+            let path = sub_matches
+                .get_one::<String>("path")
+                .expect("No path provided");
+            let name = sub_matches
+                .get_one::<String>("name")
+                .expect("No name provided");
 
             generate_package(path, typ, name);
-        },
+        }
         Some(("template", sub_matches)) => {
-            let name = sub_matches.get_one::<String>("name").expect("No name provided");
+            let name = sub_matches
+                .get_one::<String>("name")
+                .expect("No name provided");
             println!("Creating Service: {name}");
-            crate::bare::set_up_basic_app(templates::Structures::resolve_str(name).get_template_path());
-        },
+            crate::bare::set_up_basic_app(
+                templates::Structures::resolve_str(name).get_template_path(),
+            );
+        }
+        Some(("mono", sub_matches)) => {
+            let alt: String = "app".to_string();
+            let typ = sub_matches.get_one::<String>("typ").unwrap_or(&alt);
+            match typ.as_str() {
+                _ => {
+                    crate::mono::setup_monorepo();
+                }
+            }
+        }
         _ => {
             crate::bare::set_up_basic_app("basic");
         }
