@@ -14,18 +14,24 @@ type InfraResults struct {
 	Trx    tracing.Tracer
 }
 
+func (r *InfraResults) Close() error {
+	r.Trx.Close()
+
+	r.Logger.Sync()
+
+	return nil
+}
+
 // SetupInfra initializes the infra package.
 // It is called by the main package.
 func SetupInfra(
 	opts InfraOptions,
-) (InfraResults, error) {
-	res := InfraResults{}
-
+) (res InfraResults, err error) {
 	// ================ Logger
 	res.Logger = logger.InitOrDie()
 
 	// ================ Tracing
 	res.Trx = tracing.InitOrDie(nil)
 
-	return res, nil
+	return
 }

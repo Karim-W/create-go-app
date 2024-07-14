@@ -1,5 +1,5 @@
 # Step 1: Build Go Application
-FROM golang:1.21-alpine AS go-builder
+FROM golang:1.22-alpine AS go-builder
 
 WORKDIR /workspace
 
@@ -16,7 +16,9 @@ FROM alpine:latest
 WORKDIR /app
 
 # Copy Go application binary
-COPY --from=go-builder /workspace/services/{{.serviceName}}/app .
+COPY --from=go-builder /workspace/apps/{{.serviceName}}/app .
+COPY --from=go-builder /workspace/apps/{{.serviceName}}/internal/sql_migrations ./internal/sql_migrations
+COPY --from=go-builder /workspace/apps/{{.serviceName}}/swagger ./swagger
 
 
 # Expose port
@@ -24,4 +26,3 @@ EXPOSE 8080
 
 # Set the entry point
 CMD ["./app"]
-

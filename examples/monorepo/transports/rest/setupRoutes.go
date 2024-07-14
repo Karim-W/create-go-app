@@ -5,6 +5,7 @@ import (
 	"{{.moduleName}}/transports/rest/middlewares"
 
 	"github.com/gin-gonic/gin"
+	"github.com/karim-w/glose"
 	"go.uber.org/zap"
 )
 
@@ -65,7 +66,7 @@ func SetupRoutes(
 	// ================ Run Server
 	err := router.Run(opts.Port)
 	if err != nil {
-		panic(err)
+		glose.Panik(err)
 	}
 	return router
 }

@@ -7,7 +7,7 @@ import (
 // config is the app config scoped to this package.
 // It is initialized by InitOrDie.
 // refer to https://github.com/karim-w/cafe for more details on how to use it.
-var config *cafe.Cafe
+var Config *cafe.Cafe
 
 // Cafe is my personal package for config management and can be swapped out
 // for any other config management package since the getters are the only
@@ -16,7 +16,7 @@ var config *cafe.Cafe
 // InitOrDie initializes the config and panics if it fails.
 func InitOrDie() {
 	var err error
-	config, err = cafe.New(cafe.Schema{
+	Config, err = cafe.New(cafe.Schema{
 		"SERVER_PORT": cafe.String("PORT").Default("8080"),
 	})
 	if err != nil {
@@ -27,7 +27,7 @@ func InitOrDie() {
 // GetServerPort returns the port the server will listen on
 // It is used to initialize the server adapter
 func GetServerPort() (string, error) {
-	port, err := config.GetString("SERVER_PORT")
+	port, err := Config.GetString("SERVER_PORT")
 	if err != nil {
 		return "", err
 	}

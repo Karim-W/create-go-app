@@ -2,15 +2,13 @@ package main
 
 import (
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"{{.moduleName}}/apps/{{.serviceName}}/internal/config"
 	"{{.moduleName}}/apps/{{.serviceName}}/internal/wires"
 	"{{.moduleName}}/transports/rest"
 
 	"github.com/joho/godotenv"
+	"github.com/karim-w/glose"
 	"go.uber.org/zap"
 )
 
@@ -23,7 +21,7 @@ func main() {
 	// set up adapters
 
 	// ========= SetupAdapters =========
-	_, err := wires.SetupAdapters(wires.AdapterOptions{})
+	adpt, err := wires.SetupAdapters(wires.AdapterOptions{})
 	assert(err)
 
 	// ========= SetupInfra =========
@@ -32,7 +30,7 @@ func main() {
 
 	// ========= Setup Repositories =========
 	// ========= Setup Services =========
-	err = wires.SetupServices(wires.ServiceOptions{})
+	svcs, err = wires.SetupServices(wires.ServiceOptions{})
 	assert(err)
 	// ========= Setup Usecase =========
 	// ========= Setup Handlers ========
@@ -47,11 +45,12 @@ func main() {
 		SwaggerPath: "./swagger",
 	})
 
-	// *** Sigterm handler ***
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	zap.L().Info("Shutting down")
+	// ========= Graceful Shutdown =========
+	glose.Watch(
+		&svcs,
+		&infras,
+		&adpt,
+	)
 }
 
 func assert(err error) {

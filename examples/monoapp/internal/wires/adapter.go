@@ -4,6 +4,12 @@ type AdapterOptions struct{}
 
 type AdapterResults struct{}
 
+func (r *AdapterResults) Close() error {
+	// Close all the adapters
+
+	return nil
+}
+
 // SetupAdapters initializes the adapters package.
 // It is called by the main package.
 // Extend this function to add your own adapters.
@@ -11,8 +17,6 @@ type AdapterResults struct{}
 // Add your adapters to the function return type
 func SetupAdapters(
 	opts AdapterOptions,
-) (AdapterResults, error) {
-	res := AdapterResults{}
-
-	return res, nil
+) (res AdapterResults, err error) {
+	return
 }

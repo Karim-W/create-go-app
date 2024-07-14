@@ -18,8 +18,9 @@ func MustInit(
 		driver,
 		dsn,
 		&sqldb.Options{
-			MaxIdleConns: conns,
-			MaxOpenConns: conns,
+			MaxIdleConns:   conns,
+			MaxOpenConns:   conns,
+			PanicablePings: true,
 		},
 	)
 	return dbCtx

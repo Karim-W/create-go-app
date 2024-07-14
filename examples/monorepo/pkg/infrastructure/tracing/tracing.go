@@ -69,4 +69,5 @@ type Tracer interface {
 		eventTimestamp time.Time,
 		fields map[string]string,
 	)
+	Close()
 }

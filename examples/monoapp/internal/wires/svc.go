@@ -9,11 +9,20 @@ import "{{.moduleName}}/services/factory"
 
 type ServiceOptions struct{}
 
+type ServiceResults struct{}
+
+func (r *ServiceResults) Close() error {
+	// Close all the services
+
+	return nil
+}
+
 func SetupServices(
 	opts ServiceOptions,
-) error {
+) (res ServiceResults, err error) {
 	factory.Init(
 		factory.Dependencies{},
 	)
-	return nil
+
+	return
 }
