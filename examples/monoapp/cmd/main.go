@@ -30,7 +30,7 @@ func main() {
 
 	// ========= Setup Repositories =========
 	// ========= Setup Services =========
-	svcs, err = wires.SetupServices(wires.ServiceOptions{})
+	svcs, err := wires.SetupServices(wires.ServiceOptions{})
 	assert(err)
 	// ========= Setup Usecase =========
 	// ========= Setup Handlers ========

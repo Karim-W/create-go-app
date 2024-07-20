@@ -15,8 +15,6 @@ type InfraResults struct {
 }
 
 func (r *InfraResults) Close() error {
-	r.Trx.Close()
-
 	r.Logger.Sync()
 
 	return nil
