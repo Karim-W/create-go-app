@@ -1,8 +1,9 @@
 package cassie_test
 
 import (
-	"ams/pkg/adapters/cassie"
 	"testing"
+
+	"{{.moduleName}}/pkg/adapters/cassie"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -10,7 +11,7 @@ import (
 func TestParseCassieUrl(
 	t *testing.T,
 ) {
-	sample := "cassandra://localhost:9042/ams?username=ams&password=ams&ssl=true"
+	sample := "cassandra://localhost:9042/sss?username=sss&password=sss&ssl=true"
 
 	username, password, host, keyspace, port, ssl, err := cassie.ParseUri(sample)
 
@@ -19,10 +20,10 @@ func TestParseCassieUrl(
 		panic(err)
 	}
 
-	assert.Equal(t, "ams", username)
-	assert.Equal(t, "ams", password)
+	assert.Equal(t, "sss", username)
+	assert.Equal(t, "sss", password)
 	assert.Equal(t, "localhost", host)
 	assert.Equal(t, 9042, port)
-	assert.Equal(t, "ams", keyspace)
+	assert.Equal(t, "sss", keyspace)
 	assert.True(t, ssl)
 }

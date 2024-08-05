@@ -1,9 +1,10 @@
 package migrations_test
 
 import (
-	"ams/pkg/infrastructure/migrations"
 	"os"
 	"testing"
+
+	"{{.moduleName}}/pkg/infrastructure/migrations"
 )
 
 func TestNew(t *testing.T) {

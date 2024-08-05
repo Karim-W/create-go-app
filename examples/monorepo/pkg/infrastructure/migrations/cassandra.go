@@ -1,8 +1,9 @@
 package migrations
 
 import (
-	"ams/pkg/adapters/cassie"
 	"log"
+
+	"{{.moduleName}}/pkg/adapters/cassie"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/cassandra"
