@@ -113,7 +113,7 @@ pub fn add_repository(name: &str) {
     writer.write_all(content.as_bytes()).expect("failed to write file");
 
     // create the usecase implementation
-    let path = uc_path.join(repo_name.clone());
+    let path = uc_path.join(repo_name.clone()+"repository");
 
     fs::create_dir_all(path.clone()).expect("failed to create usecase folder");
 
@@ -217,7 +217,7 @@ pub fn add_usecase(name: &str) {
     writer.write_all(content.as_bytes()).expect("failed to write file");
 
     // create the usecase implementation
-    let path = uc_path.join(usecase_name.clone());
+    let path = uc_path.join(usecase_name.clone()+"usecase");
 
     fs::create_dir_all(path.clone()).expect("failed to create folder");
 
