@@ -7,6 +7,9 @@ import (
 
 type noop struct{}
 
+func (n *noop) Close() {
+}
+
 func (n *noop) ExtractTraceInfo(
 	ctx context.Context,
 ) (ver string, tid string, pid string, rid string, flg string) {

@@ -1,6 +1,7 @@
 package factory
 
 import (
+	"{{.moduleName}}/pkg/adapters/id"
 	"{{.moduleName}}/pkg/infrastructure/tracing"
 
 	"github.com/go-redis/redis/v8"
@@ -9,6 +10,7 @@ import (
 )
 
 type Dependencies struct {
+	Id    id.Id
 	Trx   tracing.Tracer
 	PSQL  sqldb.DB
 	Redis *redis.Client
@@ -16,15 +18,6 @@ type Dependencies struct {
 }
 
 var deps *Dependencies
-
-// not thread safe
-func SetUpDependencies(trx tracing.Tracer) {
-	if deps != nil {
-		return
-	}
-
-	deps = &Dependencies{Trx: trx}
-}
 
 // Init initializes the dependencies manually to avoid breaking
 // SetDependencies in the future

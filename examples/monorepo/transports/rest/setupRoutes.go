@@ -21,7 +21,7 @@ type Options struct {
 // It is called by the main package.
 func SetupRoutes(
 	opts *Options,
-	handlers ...RestHandler[gin.IRouter],
+	handlers ...Controller[gin.IRouter],
 ) *gin.Engine {
 	router := gin.New()
 
