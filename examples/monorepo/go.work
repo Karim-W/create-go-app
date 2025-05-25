@@ -1,7 +1,6 @@
 go 1.24.3
 
 use (
-	./apps/{{.serviceName}}
 	./pkg/adapters
 	./pkg/domains
 	./pkg/infrastructure
