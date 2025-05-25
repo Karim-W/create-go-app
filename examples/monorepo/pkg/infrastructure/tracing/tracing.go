@@ -2,15 +2,25 @@ package tracing
 
 import (
 	"context"
+	"os"
 	"time"
+)
+
+const (
+	USE_TESTING_FLAG = "TRACER_USE_TESTING"
 )
 
 func InitOrDie(
 	tracer Tracer,
 ) Tracer {
+	if os.Getenv(USE_TESTING_FLAG) == "true" {
+		tracer = &testing{}
+	}
+
 	if tracer == nil {
 		tracer = &noop{}
 	}
+
 	return tracer
 }
 

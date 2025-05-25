@@ -1,6 +1,6 @@
 module {{.moduleName}}/pkg/domains
 
-go 1.21.0
+go 1.24.1
 
 require github.com/gin-gonic/gin v1.9.1
 

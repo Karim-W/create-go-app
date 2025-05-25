@@ -2,4 +2,7 @@ package errorcodes
 
 const (
 	COMMON_NO_DATA = "CM-1000"
+
+	// SQL_BASED
+	FAILED_TO_BEGIN_SQL_TRANSACTION = "SQL-1001"
 )

@@ -1,5 +1,5 @@
 package rest
 
-type RestHandler[T any] interface {
+type Controller[T any] interface {
 	SetupRoutes(rg T)
 }

@@ -1,61 +1,57 @@
 package main
 
 import (
-	"log"
-
 	"{{.moduleName}}/apps/{{.serviceName}}/internal/config"
-	"{{.moduleName}}/apps/{{.serviceName}}/internal/wires"
+	"{{.moduleName}}/apps/{{.serviceName}}/internal/constants"
+	"{{.moduleName}}/pkg/wires"
 	"{{.moduleName}}/transports/rest"
 
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/karim-w/glose"
 	"go.uber.org/zap"
 )
 
 func main() {
-	// read .env file for local development
 	godotenv.Load()
-	// read config
+
 	// ========= SetupConfig =========
 	config.InitOrDie()
-	// set up adapters
 
-	// ========= SetupAdapters =========
-	adpt, err := wires.SetupAdapters(wires.AdapterOptions{})
-	assert(err)
+	// ========= Setup Application Wires =========
 
-	// ========= SetupInfra =========
-	infras, err := wires.SetupInfra(wires.InfraOptions{})
+	modules, err := wires.Run(config.Config, wires.Config{
+		ServiceName: constants.SERVICE_NAME,
+		Adapters:    wires.AdapterFlags{},
+		Infra:       wires.InfraOptions{},
+	})
 	assert(err)
 
 	// ========= Setup Repositories =========
-	// ========= Setup Services =========
-	svcs, err := wires.SetupServices(wires.ServiceOptions{})
-	assert(err)
+
 	// ========= Setup Usecase =========
+
 	// ========= Setup Handlers ========
+	handlers := []rest.Controller[gin.IRouter]{
+		// Add Handlers here
+	}
+
 	// ========= Start the app ========
 	port, err := config.GetServerPort()
 	assert(err)
 
 	go rest.SetupRoutes(&rest.Options{
-		Port:        port,
-		Logger:      zap.L(),
-		Trx:         infras.Trx,
-		SwaggerPath: "./swagger",
-	})
+		Port:   port,
+		Logger: zap.L(),
+		Trx:    modules.Infra.Trx,
+	}, handlers...)
 
 	// ========= Graceful Shutdown =========
-	glose.Watch(
-		&svcs,
-		&infras,
-		&adpt,
-	)
+	glose.Watch()
 }
 
 func assert(err error) {
 	if err != nil {
-		log.Fatal(err)
-		panic(err) // just in case, i have trust issues
+		panic(err)
 	}
 }
