@@ -3,10 +3,10 @@ package migrations
 import (
 	"log"
 
-	"{{.moduleName}}/pkg/adapters/cassie"
-
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/cassandra"
+	cas "github.com/golang-migrate/migrate/v4/database/cassandra"
+	"github.com/karim-w/coreruntime_extensions/common/options"
+	"github.com/karim-w/coreruntime_extensions/connectors/cassandra"
 )
 
 // Migrate runs migrations
@@ -22,30 +22,22 @@ func Cassandra(
 ) error {
 	log.Println("running cassandra migrations from", migration_source)
 
-	user, pass, host, keyspace, port, tls, err := cassie.ParseUri(dsn)
+	cdb, err := cassandra.Initialize(dsn, options.Cassandra{})
 	if err != nil {
-		log.Println("failed to parse dsn: ", err)
+		log.Println("failed to initialize cassandra: ", err)
 		return err
 	}
 
-	cdb, err := cassie.Connect(host, port, keyspace, user, pass, tls)
-	if err != nil {
-		log.Println("failed to connect to cassandra: ", err)
-		return err
-	}
-
-	cassie, err := cassandra.WithInstance(cdb, &cassandra.Config{
-		KeyspaceName: keyspace,
-	})
+	cc, err := cas.WithInstance(cdb, &cas.Config{})
 	if err != nil {
 		log.Println("failed to create cassandra instance: ", err)
-		return nil
+		return err
 	}
 
 	m, err := migrate.NewWithDatabaseInstance(
 		migration_source,
 		dsn,
-		cassie,
+		cc,
 	)
 	if err != nil {
 		log.Println("failed to create migration: ", err)

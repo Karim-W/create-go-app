@@ -3,13 +3,13 @@ package main
 import (
 	"{{.moduleName}}/apps/{{.serviceName}}/internal/config"
 	"{{.moduleName}}/apps/{{.serviceName}}/internal/constants"
+	"{{.moduleName}}/channels/rest"
+	"{{.moduleName}}/pkg/utils/assert"
 	"{{.moduleName}}/pkg/wires"
-	"{{.moduleName}}/transports/rest"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/karim-w/glose"
-	"go.uber.org/zap"
 )
 
 func main() {
@@ -19,13 +19,16 @@ func main() {
 	config.InitOrDie()
 
 	// ========= Setup Application Wires =========
-
-	modules, err := wires.Run(config.Config, wires.Config{
+	err := wires.Run(config.Config, wires.Config{
 		ServiceName: constants.SERVICE_NAME,
 		Adapters:    wires.AdapterFlags{},
-		Infra:       wires.InfraOptions{},
+		Infra: wires.InfraOptions{
+			PSQL:  false,
+			Redis: false,
+		},
 	})
-	assert(err)
+
+	assert.NoErr(err)
 
 	// ========= Setup Repositories =========
 
@@ -38,20 +41,12 @@ func main() {
 
 	// ========= Start the app ========
 	port, err := config.GetServerPort()
-	assert(err)
+	assert.NoErr(err)
 
 	go rest.SetupRoutes(&rest.Options{
-		Port:   port,
-		Logger: zap.L(),
-		Trx:    modules.Infra.Trx,
+		Port: port,
 	}, handlers...)
 
 	// ========= Graceful Shutdown =========
 	glose.Watch()
-}
-
-func assert(err error) {
-	if err != nil {
-		panic(err)
-	}
 }

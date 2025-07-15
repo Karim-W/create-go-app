@@ -15,7 +15,7 @@ import (
 // migration_source: the path to the migrations
 //
 // returns: error if any
-func Run(
+func Postgres(
 	dsn string,
 	migration_source string,
 ) error {

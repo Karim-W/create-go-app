@@ -1,56 +1,34 @@
 package wires
 
-import (
-	"{{.moduleName}}/pkg/adapters/id"
-	"{{.moduleName}}/pkg/infrastructure/tracing"
-
-	"github.com/go-redis/redis/v8"
-	"github.com/go-redsync/redsync/v4"
-	"github.com/karim-w/stdlib/sqldb"
-)
-
 type (
-	AdapterOption int64
+	InfraOption int64
 )
 
 const (
-	IDIER AdapterOption = iota
+	IDIER InfraOption = iota
 	PSQL
 	REDIS
 )
 
-type AdapterFlags struct {
-	Idier bool
-	PSQL  bool
-	Redis bool
-	Rsync bool
-	Extra []AdapterOption
+type InfraTuple struct {
+	Name   string
+	Option InfraOption
 }
 
-type AdapterResults struct {
-	Idier id.Id
-	PSQL  []sqldb.DB
-	Redis []*redis.Client
-	Rsync *redsync.Redsync
+type AdapterFlags struct {
+	Idier bool
 }
 
 type InfraOptions struct {
+	PSQL           bool
+	Redis          bool
+	Rsync          bool
+	Extra          []InfraTuple
 	MigrationsFlag bool
-	Tracer         tracing.Tracer
-}
-
-type InfraResults struct {
-	Trx   tracing.Tracer
-	Redis []*redis.Client
 }
 
 type Config struct {
 	ServiceName string
 	Adapters    AdapterFlags
 	Infra       InfraOptions
-}
-
-type Result struct {
-	Adapters AdapterResults
-	Infra    InfraResults
 }

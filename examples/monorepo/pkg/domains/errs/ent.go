@@ -8,7 +8,7 @@ import (
 type Entity struct {
 	Code         int    `json:"code"`
 	ErrorMessage string `json:"error"`
-	InternalCode string `json:"internal_code"`
+	InternalCode int    `json:"internal_code"`
 	Details      string `json:"message"`
 	Trace        string `json:"trace"`
 }
@@ -21,7 +21,7 @@ func New(
 	code int,
 	err string,
 	msg string,
-	InternalCode string,
+	InternalCode int,
 	trace string,
 ) *Entity {
 	return &Entity{
@@ -35,7 +35,7 @@ func New(
 
 func NewInternal(
 	Message string,
-	IntCode string,
+	IntCode int,
 	Trace string,
 ) *Entity {
 	return &Entity{
@@ -49,7 +49,7 @@ func NewInternal(
 
 func NewBadRequest(
 	Message string,
-	IntCode string,
+	IntCode int,
 	Trace string,
 ) *Entity {
 	return &Entity{
@@ -63,7 +63,7 @@ func NewBadRequest(
 
 func NewUnauthorized(
 	Message string,
-	IntCode string,
+	IntCode int,
 	Trace string,
 ) *Entity {
 	return &Entity{
@@ -77,7 +77,7 @@ func NewUnauthorized(
 
 func NewForbidden(
 	Message string,
-	IntCode string,
+	IntCode int,
 	Trace string,
 ) *Entity {
 	return &Entity{
@@ -91,7 +91,7 @@ func NewForbidden(
 
 func NewNotFound(
 	Message string,
-	IntCode string,
+	IntCode int,
 	Trace string,
 ) *Entity {
 	return &Entity{
@@ -105,7 +105,7 @@ func NewNotFound(
 
 func NewConflict(
 	Message string,
-	IntCode string,
+	IntCode int,
 	Trace string,
 ) *Entity {
 	return &Entity{
@@ -119,7 +119,7 @@ func NewConflict(
 
 func NewNotAcceptable(
 	Message string,
-	IntCode string,
+	IntCode int,
 	Trace string,
 ) *Entity {
 	return &Entity{
@@ -133,7 +133,7 @@ func NewNotAcceptable(
 
 func NewTooEarly(
 	Message string,
-	InternalCode string,
+	InternalCode int,
 	Trace string,
 ) *Entity {
 	return &Entity{
@@ -145,7 +145,7 @@ func NewTooEarly(
 	}
 }
 
-func SqlError(err error, code string, trace string) *Entity {
+func SqlError(err error, code int, trace string) *Entity {
 	if err == sql.ErrNoRows {
 		return NewNotFound(
 			"no result found",

@@ -45,7 +45,7 @@ func Initialize(c *cafe.Cafe) error {
 
 	switch driver {
 	case "postgres":
-		return Run(dsn, migrationSource)
+		return Postgres(dsn, migrationSource)
 	case "cassandra":
 		return Cassandra(dsn, migrationSource)
 	default:

@@ -1,41 +1,43 @@
+//
+//  logger.go
+//  newest_template
+//
+//  Created by karim-w on 12/07/2025.
+//
+
 package logger
 
 import (
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"os"
+
+	"github.com/karim-w/coreruntime/runtimemodules"
+	"github.com/karim-w/coreruntime_extensions/implementations/loggerviazap"
 )
 
-// InitOrDie initializes the logger and panics if it fails.
-func InitOrDie() *zap.Logger {
-	encoderCfg := zap.NewProductionEncoderConfig()
+const ENV_KEY = "LOG_VARIANT"
 
-	encoderCfg.TimeKey = "ts"
+var log_variant = os.Getenv(ENV_KEY)
 
-	encoderCfg.EncodeTime = zapcore.ISO8601TimeEncoder
-	encoderCfg.EncodeLevel = zapcore.CapitalLevelEncoder
+type LogVariant string
 
-	config := zap.Config{
-		Level:             zap.NewAtomicLevelAt(zap.InfoLevel),
-		Development:       false,
-		DisableCaller:     true,
-		DisableStacktrace: true,
-		Sampling:          nil,
-		Encoding:          "json",
-		EncoderConfig:     encoderCfg,
-		OutputPaths: []string{
-			"stdout",
-		},
-		ErrorOutputPaths: []string{
-			"stderr",
-		},
-		// InitialFields: map[string]interface{}{
-		// 	"pid": os.Getpid(),
-		// },
+const (
+	ZAP  LogVariant = "zap"
+	NONE LogVariant = "none"
+	// TODO: Implement other types
+)
+
+func Initialize() (runtimemodules.Logger, error) {
+	switch log_variant {
+	case string(NONE):
+		// TODO: call the extension's no-op logger
+		return nil, nil // No logging
+	default:
+		opts := loggerviazap.LoggerOptions{
+			IncludeCaller:     os.Getenv("LOG_INCLUDE_CALLER") != "",
+			IncludeStacktrace: os.Getenv("LOG_INCLUDE_STACKTRACE") != "",
+			ShowPid:           os.Getenv("LOG_SHOW_PID") != "",
+			OutErrtoStdout:    os.Getenv("LOG_OUT_ERR_TO_STDOUT") != "",
+		}
+		return loggerviazap.Initialize(opts), nil
 	}
-
-	logginInstance := zap.Must(config.Build())
-
-	zap.ReplaceGlobals(logginInstance)
-
-	return logginInstance
 }

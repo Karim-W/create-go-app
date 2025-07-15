@@ -1,87 +1,92 @@
 package wires
 
 import (
+	"database/sql"
+	"fmt"
 	"log"
 
-	"{{.moduleName}}/pkg/adapters/id"
-	"{{.moduleName}}/pkg/adapters/posty"
-	"{{.moduleName}}/pkg/adapters/rdb"
-	"{{.moduleName}}/pkg/adapters/rsync"
 	"{{.moduleName}}/pkg/infrastructure/logger"
 	"{{.moduleName}}/pkg/infrastructure/migrations"
-	"{{.moduleName}}/pkg/infrastructure/redistracer"
-	"{{.moduleName}}/pkg/infrastructure/tracing"
-	"{{.moduleName}}/services/factory"
+	"{{.moduleName}}/pkg/infrastructure/posty"
+	"{{.moduleName}}/pkg/infrastructure/rdb"
+	"{{.moduleName}}/pkg/infrastructure/rsync"
+	"{{.moduleName}}/pkg/infrastructure/tracer"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/karim-w/cafe"
-	"github.com/karim-w/stdlib/sqldb"
+	"github.com/karim-w/coreruntime"
+	"github.com/karim-w/coreruntime/runtimekeys"
 )
 
-func Run(cfg *cafe.Cafe, opt Config) (res Result, err error) {
-	deps := factory.Dependencies{}
+func Run(cfg *cafe.Cafe, opt Config) (err error) {
+	deps := coreruntime.Dependencies{}
+	deps.SQLDatabases = make(map[string]*sql.DB)
+	deps.RedisClients = make(map[string]*redis.Client)
 
-	// Adapters
-	if opt.Adapters.Idier {
-		res.Adapters.Idier = id.New()
-		deps.Id = res.Adapters.Idier
+	// Infrastructure
+
+	if opt.Infra.PSQL {
+		deps.SQLDatabases[runtimekeys.DEFAULT_SQL_KEY], err = posty.Initialize(cfg)
+		if err != nil {
+			return
+		}
 	}
 
-	if opt.Adapters.PSQL {
-		res.Adapters.PSQL = make([]sqldb.DB, 1)
-		res.Adapters.PSQL[0] = posty.Initialize(cfg)
-		deps.PSQL = res.Adapters.PSQL[0]
+	if opt.Infra.Redis {
+		deps.RedisClients[runtimekeys.DEFAULT_REDIS_KEY], err = rdb.Initialize(cfg)
 	}
 
-	if opt.Adapters.Redis {
-		res.Adapters.Redis = make([]*redis.Client, 1)
-		res.Adapters.Redis[0] = rdb.MustInit(cfg)
-		deps.Redis = res.Adapters.Redis[0]
+	if opt.Infra.Rsync {
+		deps.Redsync, err = rsync.Initialize(cfg)
+		if err != nil {
+			return
+		}
+
 	}
 
-	if opt.Adapters.Rsync {
-		res.Adapters.Rsync = rsync.MustInit(cfg)
-		deps.RSync = res.Adapters.Rsync
-	}
-
-	for _, v := range opt.Adapters.Extra {
-		switch v {
+	// TODO:
+	for _, v := range opt.Infra.Extra {
+		switch v.Option {
 		case PSQL:
-			if len(res.Adapters.PSQL) == 0 {
-				res.Adapters.PSQL = make([]sqldb.DB, 0, 1)
+			_, ok := deps.SQLDatabases[v.Name]
+			if ok {
+				log.Printf("Database %s already exists in the dependencies\n", v.Name)
+				err = fmt.Errorf("Database %s already exists in the dependencies", v.Name)
+				return
 			}
 
-			res.Adapters.PSQL = append(res.Adapters.PSQL, posty.Initialize(cfg))
+			deps.SQLDatabases[v.Name], err = posty.Initialize(cfg)
 
 		case REDIS:
-			if len(res.Adapters.Redis) == 0 {
-				res.Adapters.Redis = make([]*redis.Client, 0, 1)
+
+			_, ok := deps.RedisClients[v.Name]
+			if ok {
+				log.Printf("Redis client %s already exists in the dependencies\n", v.Name)
+				err = fmt.Errorf("Redis client %s already exists in the dependencies", v.Name)
+				return
 			}
 
-			res.Adapters.Redis = append(res.Adapters.Redis, rdb.MustInit(cfg))
+			deps.RedisClients[v.Name], err = rdb.Initialize(cfg)
+			if err != nil {
+				log.Printf("Failed to initialize Redis client %s: %v\n", v.Name, err)
+				return
+			}
 
 		default:
 			log.Printf("Value %d is not supported as an adapter extra\n", v)
 		}
 	}
 
-	// Infra
-
 	/// Logger
-	logger.InitOrDie()
+	deps.Logger, err = logger.Initialize()
+	if err != nil {
+		return
+	}
 
 	/// Tracer
-	res.Infra.Trx = tracing.InitOrDie(opt.Infra.Tracer)
-	deps.Trx = res.Infra.Trx
-
-	res.Infra.Redis = make([]*redis.Client, 0, len(res.Adapters.Redis))
-
-	for _, r := range res.Adapters.Redis {
-		res.Infra.Redis = append(res.Infra.Redis, redistracer.WrapWithTracing(
-			r,
-			opt.ServiceName,
-			res.Infra.Trx,
-		))
+	deps.Tracer, err = tracer.Initialize()
+	if err != nil {
+		return
 	}
 
 	if opt.Infra.MigrationsFlag {
@@ -91,8 +96,8 @@ func Run(cfg *cafe.Cafe, opt Config) (res Result, err error) {
 		}
 	}
 
-	// SERVICES
-	factory.Init(deps)
+	// Setup Runtime Backbone
+	coreruntime.Setup(deps)
 
 	return
 }
